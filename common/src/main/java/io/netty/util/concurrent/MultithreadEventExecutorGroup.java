@@ -27,13 +27,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Abstract base class for {@link EventExecutorGroup} implementations that handles their tasks with multiple threads at
  * the same time.
+ * 继承 AbstractEventExecutorGroup 抽象类，基于多线程的 EventExecutor ( 事件执行器 )的分组抽象类。
  */
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
 
     private final EventExecutor[] children;
     private final Set<EventExecutor> readonlyChildren;
+    /**
+     * 已终止的 EventExecutor 数量
+     */
     private final AtomicInteger terminatedChildren = new AtomicInteger();
+    /**
+     * 用于终止 EventExecutor 的异步 Future
+     */
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
+    /**
+     * EventExecutor 选择器
+     */
     private final EventExecutorChooserFactory.EventExecutorChooser chooser;
 
     /**
@@ -71,16 +81,17 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
         if (nThreads <= 0) {
             throw new IllegalArgumentException(String.format("nThreads: %d (expected: > 0)", nThreads));
         }
-
+        // 创建执行器
         if (executor == null) {
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }
-
+        // 创建 EventExecutor 数组
         children = new EventExecutor[nThreads];
 
         for (int i = 0; i < nThreads; i ++) {
             boolean success = false;
             try {
+                // 创建 EventExecutor 对象
                 children[i] = newChild(executor, args);
                 success = true;
             } catch (Exception e) {
