@@ -822,7 +822,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     public void lazyExecute(Runnable task) {
         execute(ObjectUtil.checkNotNull(task, "task"), false);
     }
-
+    //netty会判断reactor线程有没有被启动，如果没有被启动，那就启动线程再往任务队列里面添加任务
     private void execute(Runnable task, boolean immediate) {
         boolean inEventLoop = inEventLoop();
         addTask(task);
@@ -939,6 +939,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     private static final long SCHEDULE_PURGE_INTERVAL = TimeUnit.SECONDS.toNanos(1);
 
+    //SingleThreadEventExecutor 在执行doStartThread的时候，会调用内部执行器executor的execute方法，将调用NioEventLoop的run方法的过程封装成一个runnable塞到一个线程中去执行
     private void startThread() {
         if (state == ST_NOT_STARTED) {
             if (STATE_UPDATER.compareAndSet(this, ST_NOT_STARTED, ST_STARTED)) {
@@ -986,6 +987,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
                 boolean success = false;
                 updateLastExecutionTime();
                 try {
+                    //该线程就是executor创建，对应netty的reactor线程实体。executor 默认是ThreadPerTaskExecutor
                     SingleThreadEventExecutor.this.run();
                     success = true;
                 } catch (Throwable t) {

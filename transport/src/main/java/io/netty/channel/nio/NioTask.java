@@ -20,6 +20,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 
 /**
+ * 用于自定义 Nio 事件处理接口。对于每个 Nio 事件，可以认为是一个任务( Task )
  * An arbitrary task that can be executed by {@link NioEventLoop} when a {@link SelectableChannel} becomes ready.
  *
  * @see NioEventLoop#register(SelectableChannel, int, NioTask)
